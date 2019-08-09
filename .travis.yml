@@ -22,15 +22,15 @@ before_install:
   # Configure conan
   - docker exec build$COMPILER bash -c 'conan profile new default --detect; conan profile update settings.compiler.libcxx=libstdc++11 default'
   # Clone repo
-  - docker exec build$COMPILER git clone https://github.com/francescoseccamonte/cpp-travis-integration.git /repo
+  - docker exec build$COMPILER git clone https://github.com/francescoseccamonte/cpp-travis-integration.git /home/repo
 
 script:
-  - docker exec build$COMPILER mkdir /repo/build
-  - docker exec -w repo/build build$COMPILER conan install -o cpp-travis-integration:build_tests=True ..
-  - docker exec -w /repo/build build$COMPILER cmake ..
-  - docker exec -w /repo/build build$COMPILER cmake --build .
-  - docker exec -w /repo/build build$COMPILER ctest
+  - docker exec build$COMPILER mkdir /home/repo/build
+  - docker exec -w /home/repo/build build$COMPILER conan install -o cpp-travis-integration:build_tests=True ..
+  - docker exec -w /home/repo/build build$COMPILER cmake ..
+  - docker exec -w /home/repo/build build$COMPILER cmake --build .
+  - docker exec -w /home/repo/build build$COMPILER ctest
 
 after_success:
   # Create a conan package containing the project
-  - docker exec -w /repo build$COMPILER conan create francesco/testing ..
+  - docker exec -w /home/repo build$COMPILER conan create francesco/testing ..
