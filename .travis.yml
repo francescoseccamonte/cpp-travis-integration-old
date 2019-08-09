@@ -1,0 +1,44 @@
+# Author : Francesco Seccamonte
+# Copyright (c) 2019 Francesco Seccamonte. All rights reserved.  
+# Licensed under the MIT License. See LICENSE file in the project root for full license information.  
+# 
+
+sudo: required
+language: cpp
+
+# safelist
+branches:
+  only:
+  - master
+  - stable
+
+services:
+  - docker
+
+env:
+  # used to setup a build matrix
+  - COMPILER=gcc7
+  - COMPILER=gcc8
+
+before_install:
+  # getting container with compiler, cmake and conan
+  - docker pull conanio/$COMPILER
+  - docker run conanio/$COMPILER
+  - docker container ls -a
+
+install:
+  # Automatic detection of your arch, compiler, etc
+  - conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default
+  
+before_script:
+  - mkdir build && cd build
+  - conan install -o cpp-travis-integration:build_tests=True ..
+  - cmake ..
+
+script:
+  - make
+  - ctest
+
+after_success:
+  # Create a conan package containing the project
+  - conan create francesco/testing ..
