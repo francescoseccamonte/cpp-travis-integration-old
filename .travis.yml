@@ -6,12 +6,6 @@
 sudo: required
 language: cpp
 
-# safelist
-branches:
-  only:
-  - master
-  - stable
-
 services:
   - docker
 
@@ -21,24 +15,22 @@ env:
   - COMPILER=gcc8
 
 before_install:
-  # getting container with compiler, cmake and conan
+  # Pull image
   - docker pull conanio/$COMPILER
-  - docker run conanio/$COMPILER
-  - docker container ls -a
-
-install:
-  # Automatic detection of your arch, compiler, etc
-  - conan profile new default --detect && conan profile update settings.compiler.libcxx=libstdc++11 default
-  
-before_script:
-  - mkdir build && cd build
-  - conan install -o cpp-travis-integration:build_tests=True ..
-  - cmake ..
+  # Start container
+  - docker run -itd --name build$COMPILER conanio/$COMPILER
+  # Configure conan
+  - docker exec bash -c 'conan profile new default --detect; conan profile update settings.compiler.libcxx=libstdc++11 default'
+  # Clone repo
+  - docker exec build git clone https://github.com/francescoseccamonte/cpp-travis-integration.git /repo
 
 script:
-  - make
-  - ctest
+  - docker exec build$COMPILER mkdir /repo/build
+  - docker exec -w repo/build build$COMPILER conan install -o cpp-travis-integration:build_tests=True ..
+  - docker exec -w /repo/build build$COMPILER cmake ..
+  - docker exec -w /repo/build build$COMPILER cmake --build .
+  - docker exec -w /repo/build build$COMPILER ctest
 
 after_success:
   # Create a conan package containing the project
-  - conan create francesco/testing ..
+  - docker exec -w /repo build$COMPILER conan create francesco/testing ..
