@@ -39,4 +39,4 @@ script:
 
 after_success:
   # Create a conan package containing the project
-  - docker exec -w /home/conan/repo build$COMPILER conan create francesco/testing ..
+  - docker exec -w /home/conan/repo build$COMPILER conan create francesco/testing .
