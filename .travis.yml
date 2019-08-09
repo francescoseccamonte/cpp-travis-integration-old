@@ -33,7 +33,7 @@ before_install:
 
 script:
   - docker exec build$COMPILER mkdir /home/conan/repo/build$COMPILER
-  - docker exec -w /home/conan/repo/build$COMPILER build$COMPILER conan install -o cpp-travis-integration:build_tests=True ..
+  - docker exec -w /home/conan/repo/build$COMPILER build$COMPILER conan install -o cpp-travis-integration:build_tests=True --build=missing ..
   - docker exec -w /home/conan/repo/build$COMPILER build$COMPILER cmake ..
   - docker exec -w /home/conan/repo/build$COMPILER build$COMPILER cmake --build .
   - docker exec -w /home/conan/repo/build$COMPILER build$COMPILER ctest
